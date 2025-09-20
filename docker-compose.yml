@@ -1,0 +1,108 @@
+services:
+  # Base de datos MariaDB
+  mariadb:
+    image: mariadb:11.2
+    platform: linux/amd64
+    container_name: microservices_mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: usuarios_db
+      MARIADB_USER: app_user
+      MARIADB_PASSWORD: root
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb-use-native-aio=0
+    ports:
+      - "3307:3306"  # Puerto externo 3307 para evitar conflictos
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - microservices_network
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+
+  # Servicio de Usuarios
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: user-service
+    container_name: user_service
+    restart: unless-stopped
+    environment:
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_USER=app_user
+      - DB_PASSWORD=root
+      - DB_NAME=usuarios_db
+      - USER_SERVICE_PORT=5001
+      - NODE_ENV=production
+    ports:
+      - "5001:5001"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - microservices_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5001/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+
+  # Servicio de Pedidos
+  order-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: order-service
+    container_name: order_service
+    restart: unless-stopped
+    environment:
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_USER=app_user
+      - DB_PASSWORD=root
+      - DB_NAME=usuarios_db
+      - ORDER_SERVICE_PORT=5002
+      - USER_SERVICE_URL=http://user-service:5001
+      - NODE_ENV=production
+    ports:
+      - "5002:5002"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+    networks:
+      - microservices_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Adminer para administración de BD (opcional)
+  adminer:
+    image: adminer:latest
+    container_name: microservices_adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mariadb
+    networks:
+      - microservices_network
+    environment:
+      ADMINER_DEFAULT_SERVER: mariadb
+
+volumes:
+  mariadb_data:
+    driver: local
+
+networks:
+  microservices_network:
+    driver: bridge

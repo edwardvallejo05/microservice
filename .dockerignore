@@ -1,0 +1,59 @@
+# Dependencias
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos de runtime
+*.pid
+*.seed
+*.pid.lock
+
+# Logs
+logs
+*.log
+
+# Archivos de desarrollo
+.nyc_output
+coverage/
+
+# Archivos de IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Documentación
+*.md
+README*
+
+# Archivos de configuración local
+.env.local
+.env.development
+.env.test
+
+# Archivos temporales
+tmp/
+temp/
+
+# Scripts SQL (se copiarán por separado)
+*.sql
