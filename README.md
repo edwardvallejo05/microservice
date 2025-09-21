@@ -59,6 +59,41 @@ Un sistema completo de microservicios con APIs REST para gestión de usuarios y 
    - Contraseña: `root`
    - Base de datos: `usuarios_db`
 
+### 🪟 Instalación en Windows
+
+Si tienes problemas con la instalación estándar en Windows, usa los scripts incluidos:
+
+#### **Opción A: Script Batch (.bat)**
+```cmd
+# Ejecutar desde Command Prompt
+build-windows.bat
+```
+
+#### **Opción B: Script PowerShell (.ps1)**
+```powershell
+# Ejecutar desde PowerShell
+.\build-windows.ps1
+```
+
+#### **Opción C: Manual con comandos Windows**
+```cmd
+# Detener contenedores
+docker-compose down
+
+# Limpiar cache
+docker system prune -f
+
+# Construir sin cache
+docker-compose build --no-cache
+
+# Iniciar servicios
+docker-compose up -d
+
+# Verificar (usando PowerShell)
+curl http://localhost:5001/health
+curl http://localhost:5002/health
+```
+
 ### Opción 2: Instalación Local (Sin Docker)
 
 Si prefieres ejecutar sin Docker:
@@ -373,6 +408,40 @@ docker-compose down -v
 ```
 
 ## 🚨 Troubleshooting
+
+### 🪟 Problemas específicos en Windows
+
+#### Error: "npm ci failed" o "exit code: 1"
+```cmd
+# Solución 1: Usar scripts incluidos
+build-windows.bat
+
+# Solución 2: Limpiar completamente Docker
+docker-compose down -v
+docker system prune -a -f
+docker-compose up --build -d
+
+# Solución 3: Verificar configuración de línea de comandos
+docker --version
+docker-compose --version
+```
+
+#### Error: "Permission denied" en Windows
+```powershell
+# Ejecutar PowerShell como Administrador
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+.\build-windows.ps1
+```
+
+#### Error: "Port already in use" en Windows
+```cmd
+# Verificar puertos en uso
+netstat -ano | findstr :5001
+netstat -ano | findstr :5002
+
+# Terminar proceso si es necesario
+taskkill /PID [NUMBER] /F
+```
 
 ### Error de conexión a MariaDB
 1. Verifica que Docker esté ejecutándose

@@ -7,15 +7,21 @@ RUN apk add --no-cache dumb-init wget
 # Crear directorio de la aplicación
 WORKDIR /app
 
+# Copiar archivos de configuración npm
+COPY .npmrc ./
+
 # Copiar archivos de dependencias
 COPY package*.json ./
 
-# Instalar dependencias
-RUN npm ci --omit=dev && npm cache clean --force
+# Instalar dependencias con mejor compatibilidad para Windows y crear usuario
+RUN npm config set fund false && \
+    npm config set audit false && \
+    npm install --only=production --no-optional && \
+    npm cache clean --force && \
+    addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
 
 # Crear usuario no-root por seguridad
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
 
 # Imagen para servicio de usuarios
 FROM base AS user-service

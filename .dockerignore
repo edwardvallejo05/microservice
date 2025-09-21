@@ -33,6 +33,11 @@ coverage/
 ehthumbs.db
 Thumbs.db
 
+# Windows específicos
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
 # Git
 .git
 .gitignore
